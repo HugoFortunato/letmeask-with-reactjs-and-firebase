@@ -2,22 +2,21 @@ import ilustrationImg from '../assets/images/illustration.svg'
 import logoImg from '../assets/images/logo.svg'
 import googleIconImg from '../assets/images/google-icon.svg'
 import { useNavigate } from 'react-router-dom';
-import { auth, firebase } from '../services/firebase'
 
 import '../styles/auth.scss'
 import { Button } from '../components/Button'
+import { useAuth } from '../hooks/useAuth';
 
 export function Home() {
     const navigate = useNavigate()
+    const { user, signInWithGoogle } = useAuth()
 
-    const handleCreateRoom = () => {
-        const provider = new firebase.auth.GoogleAuthProvider()
+   async function handleCreateRoom() {
+        if (!user) {
+            await signInWithGoogle()
+        }
 
-        auth.signInWithPopup(provider).then(result => {
-            console.log(result)
-        })
-
-        // navigate('/rooms/new')
+        navigate('/rooms/new')
     }
 
     return (
