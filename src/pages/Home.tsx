@@ -6,10 +6,15 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/auth.scss'
 import { Button } from '../components/Button'
 import { useAuth } from '../hooks/useAuth';
+import { FormEvent, useState } from 'react';
+import { database } from '../services/firebase';
+import toast, { Toaster } from 'react-hot-toast';
+
 
 export function Home() {
     const navigate = useNavigate()
     const { user, signInWithGoogle } = useAuth()
+    const [roomCode, setRoomCode] = useState('')
 
    async function handleCreateRoom() {
         if (!user) {
@@ -17,6 +22,23 @@ export function Home() {
         }
 
         navigate('/rooms/new')
+    }
+
+    async function handleJoinRoom(event: FormEvent) {
+        event.preventDefault()
+        
+        if (roomCode.trim() === "") {
+            return;
+        }
+
+        const roomRef = await database.ref(`rooms/${roomCode}`).get()
+
+        if (!roomRef.exists()) {
+            toast.error('Room does not exists.')
+            return;
+        }
+
+        navigate(`rooms/${roomCode}`)
     }
 
     return (
@@ -34,11 +56,12 @@ export function Home() {
                         Crie sua sala com o google
                    </button>
                    <div className='separator'>ou entre em uma sala</div>
-                   <form>
-                       <input type="text" placeholder='Digite o código da sala'/>
+                   <form onSubmit={handleJoinRoom}>
+                       <input value={roomCode} onChange={event => setRoomCode(event.target.value)} type="text" placeholder='Digite o código da sala'/>
                        <Button type="submit">
                            Entrar na sala 
                        </Button>
+                       <Toaster />
                    </form>
                </div>
            </main>
